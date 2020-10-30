@@ -1,3 +1,6 @@
+//stavit sve void fje u int
+//dodat da javi ako alokacija ne uspije
+
 #define _CRT_SECURE_NO_WARNINGS
 #include<stdio.h>
 #include<stdlib.h>
@@ -213,7 +216,7 @@ void ScanFromFile(Position p, char* fileName){
 		
 		q = (Position)malloc(sizeof(_student));
 		
-		fscanf(f, " %s %s %d\n", p->firstName, p->lastName, p->year); //PROMINIT OVO
+		fscanf(f, " %s %s %d\n", p->firstName, p->lastName, p->year); //prominit ovo
 puts("unutar");
 		q->next = p->next;
 		p->next = q;
