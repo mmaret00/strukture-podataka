@@ -3,6 +3,7 @@
 #include<stdlib.h>
 #include<string.h>
 
+struct osoba; //ka jer zna inace bit bug
 typedef struct student* Position;
 
 typedef struct student{
