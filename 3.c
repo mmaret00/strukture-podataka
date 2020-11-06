@@ -250,7 +250,7 @@ int ScanFromFile(Position p, char* fileName, int n){
 	FILE* f = NULL;	
 	f = fopen(fileName, "r");
 
-	for (i = 0; i < n-1; i++) {
+	for (i = 0; i < n-1; i++) { //na visual studiu nije n-1 nego n
 
 		q = (Position)malloc(sizeof(_student));
         if(NULL == q){
