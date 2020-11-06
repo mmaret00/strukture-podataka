@@ -3,7 +3,7 @@
 #include<stdlib.h>
 #include<string.h>
 
-struct osoba; //ka jer zna inace bit bug
+//struct osoba;
 typedef struct student* Position;
 
 typedef struct student{
@@ -25,6 +25,7 @@ int EnterBefore(Position);
 char* nameOfFile(char*);
 int EnterIntoFile(Position, char*);
 int ScanFromFile(Position, char*);
+int numberOfStudents(char*);
 
 
 int main()
@@ -232,24 +233,47 @@ int EnterIntoFile(Position p, char* fileName){
 int ScanFromFile(Position p, char* fileName){
 
 	Position q = 0;
+	int n = 0, i = 0;
+
 	FILE* f = NULL;
 	f = fopen(fileName, "r");
-	puts("prije");
-	while(NULL != p->next){
-		
+
+	n = numberOfStudents(fileName);
+
+	for (i = 0; i < n; i++) {
+
 		q = (Position)malloc(sizeof(_student));
         if(q = NULL){
             printf("Allocation failed.\n");
             return 0;
         }
-		
-		fscanf(f, " %s %s %d\n", p->firstName, p->lastName, p->year); //prominit ovo
-puts("unutar");
+
+		fscanf(f, " %s %s %d", q->firstName, q->lastName, q->year); //prominit ovo
+
+		while (p->next != 0)
+			p = p->next;
+
 		q->next = p->next;
 		p->next = q;
-
-		p = p->next;
 	}
+	fclose(f);
 
     return 0;
+}
+
+int numberOfStudents(char* fileName) {
+
+	int n = 0;
+	char temp[1024] = { 0 };
+	FILE* f = NULL;
+	f = fopen(fileName, "r");
+
+	while (!feof(f)) {
+
+		fgets(temp, 1024, f);
+		if (strlen(temp) == 0) continue;
+		n++;
+	}
+	fclose(f);
+	return n;
 }
