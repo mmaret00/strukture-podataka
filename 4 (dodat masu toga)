@@ -1,0 +1,112 @@
+//Napisati program za zbrajanje i množenje polinoma. Koeficijenti i eksponenti se čitaju iz datoteke. 
+
+#define _CRT_SECURE_NO_WARNINGS
+#define MAX_LENGTH 1024
+#include<stdio.h>
+#include<stdlib.h>
+#include<string.h>
+
+typedef struct polinom* Position;
+
+typedef struct polinom{
+    int n;
+	int x;
+    Position next;
+}_pol;
+
+char* nameOfFile(char* fileName) {
+
+	fileName = (char*)malloc(MAX_LENGTH * sizeof(char));
+    if(NULL == fileName){
+        printf("Allocation failed.\n");
+        return 0;
+    }
+
+	printf("Enter the name of the file: \n");
+	scanf("%s", fileName);
+	if (strchr(fileName, '.') == NULL)strcat(fileName, ".txt");
+	return fileName;
+}
+
+int ScanFromFile(Position p, char* fileName, int n){
+
+	Position q = 0;
+	int i = 0;
+
+	FILE* f = NULL;	
+	f = fopen(fileName, "r");
+
+	while(p->next != 0) {
+
+		q = (Position)malloc(sizeof(_pol));
+        if(NULL == q){
+            printf("Allocation failed.\n");
+            return 0;
+        }
+
+		fscanf(f, " %d %d", q->n, q->x);
+
+		while (NULL != p->next)
+			p = p->next;
+
+		q->next = p->next;
+		p->next = q;
+	}
+	
+	fclose(f);
+
+    return 0;
+}
+
+int numberOfElements(char* fileName) {
+
+	int n = 0;
+	char temp[MAX_LENGTH] = { 0 };
+	FILE* f = NULL;
+	f = fopen(fileName, "r");
+
+	while (!feof(f)) {
+
+		fgets(temp, MAX_LENGTH, f);
+		if (strlen(temp) == 0) continue;
+		n++;
+	}
+	fclose(f);
+	return n;
+}
+
+int Print(Position p, int n)
+{
+	printf("\nList no.%d:\n", n);
+    while(p != 0){
+        printf("\n%s %s %d\n", p->n, p->x);
+        p = p->next;
+    }
+
+    return 0;
+}
+
+
+
+int main(){
+
+	char* fileName1 = NULL;
+	char* fileName2 = NULL;
+	_pol head1, head2;
+	int n1 = 0, n2 = 0;
+	head1.next = 0;
+	head2.next = 0;
+
+	fileName1 = nameOfFile(fileName1);
+	//fileName2 = nameOfFile(fileName2);
+	
+	n1 = numberOfElements(fileName1);
+	n2 = numberOfElements(fileName2);
+	ScanFromFile(&head1, fileName1, n1);
+	//ScanFromFile(&head2, fileName2, n2);
+
+	Print(head1.next, n1);
+	//Print(head2.next, n2);
+
+	return 0;
+}
