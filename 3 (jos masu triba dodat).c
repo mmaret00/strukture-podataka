@@ -1,6 +1,3 @@
-//stavit sve void fje u int
-//dodat da javi ako alokacija ne uspije
-
 #define _CRT_SECURE_NO_WARNINGS
 #include<stdio.h>
 #include<stdlib.h>
@@ -17,17 +14,17 @@ typedef struct student{
 }_student;
 
 
-void EnterBeginning(Position);
-void Print(Position);
-void EnterEnd(Position);
-void Find(Position);
+int EnterBeginning(Position);
+int Print(Position);
+int EnterEnd(Position);
+int Find(Position);
 Position FindPrev(char[], Position);
 int Delete(Position);
-void EnterAfter(Position);
-void EnterBefore(Position);
+int EnterAfter(Position);
+int EnterBefore(Position);
 char* nameOfFile(char*);
-void EnterIntoFile(Position, char*);
-void ScanFromFile(Position, char*);
+int EnterIntoFile(Position, char*);
+int ScanFromFile(Position, char*);
 
 
 int main()
@@ -60,7 +57,7 @@ int main()
 	}
 }
 
-void EnterBeginning(Position p)
+int EnterBeginning(Position p)
 {
     Position q = 0;
     printf("When done, type 'stop'.\n");
@@ -68,6 +65,10 @@ void EnterBeginning(Position p)
     while(1){
 
     q = (Position)malloc(sizeof(_student));
+    if(q = NULL){
+        printf("Allocation failed.\n");
+        return 0;
+    }
 
 	printf("First name, last name, birth year:\n");
     scanf(" %s", &q->firstName);
@@ -79,18 +80,22 @@ void EnterBeginning(Position p)
     q->next = p->next;
     p->next = q;
     }
+
+    return 0;
 }
 
-void Print(Position p)
+int Print(Position p)
 {
 	printf("\nList:\n");
     while(p != 0){
         printf("\n%s %s %d\n", p->firstName, p->lastName, p->year);
         p = p->next;
     }
+
+    return 0;
 }
 
-void EnterEnd(Position p)
+int EnterEnd(Position p)
 {
     Position q = 0;
     printf("\nwhen done, type 'stop'.\n");
@@ -98,6 +103,10 @@ void EnterEnd(Position p)
     while(1){
 
     q = (Position)malloc(sizeof(_student));
+    if(q = NULL){
+        printf("Allocation failed.\n");
+        return 0;
+    }
 
     printf("First name, last name, birth year:\n");
 	scanf(" %s", &q->firstName);
@@ -111,9 +120,11 @@ void EnterEnd(Position p)
     q->next = p->next;
     p->next = q;
     }
+
+    return 0;
 }
 
-void Find(Position p)
+int Find(Position p)
 {
 	char entry[50] = {0};
 
@@ -129,6 +140,8 @@ void Find(Position p)
 		}
 	}
 		printf("\n%s %s %d\n", p->firstName, p->lastName, p->year);
+
+    return 0;
 }
 
 Position FindPrev(char entry[], Position p){
@@ -159,7 +172,7 @@ int Delete(Position p)
 
 //vjezba 3
 
-void EnterAfter(Position p)
+int EnterAfter(Position p)
 {
 	Position prev;
 	char entry[50] = {0};
@@ -171,9 +184,11 @@ void EnterAfter(Position p)
 	prev = prev->next;
 
 	EnterBeginning(prev);
+
+    return 0;
 }
 
-void EnterBefore(Position p)
+int EnterBefore(Position p)
 {
 	Position prev;
 	char entry[50] = {0};
@@ -184,18 +199,24 @@ void EnterBefore(Position p)
 	prev = FindPrev(entry, p);
 
 	EnterBeginning(prev);
+
+    return 0;
 }
 
 char* nameOfFile(char* fileName) {
 
 	fileName = (char*)malloc(1024 * sizeof(char));
+    if(fileName = NULL){
+        printf("Allocation failed.\n");
+        return 0;
+    }
 	printf("Enter the name of the file: \n");
 	scanf("%s", fileName);
 	if (strchr(fileName, '.') == NULL)strcat(fileName, ".txt");
 	return fileName;
 }
 
-void EnterIntoFile(Position p, char* fileName){
+int EnterIntoFile(Position p, char* fileName){
 
 	FILE* f = NULL;
 	f = fopen(fileName, "w");
@@ -204,9 +225,11 @@ void EnterIntoFile(Position p, char* fileName){
 		fprintf(f, "%s %s %d\n", p->firstName, p->lastName, p->year);
 		p = p->next;
 	}
+
+    return 0;
 }
 
-void ScanFromFile(Position p, char* fileName){
+int ScanFromFile(Position p, char* fileName){
 
 	Position q = 0;
 	FILE* f = NULL;
@@ -215,6 +238,10 @@ void ScanFromFile(Position p, char* fileName){
 	while(NULL != p->next){
 		
 		q = (Position)malloc(sizeof(_student));
+        if(q = NULL){
+            printf("Allocation failed.\n");
+            return 0;
+        }
 		
 		fscanf(f, " %s %s %d\n", p->firstName, p->lastName, p->year); //prominit ovo
 puts("unutar");
@@ -223,4 +250,6 @@ puts("unutar");
 
 		p = p->next;
 	}
+
+    return 0;
 }
