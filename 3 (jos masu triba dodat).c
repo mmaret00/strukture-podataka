@@ -3,12 +3,12 @@
 #include<stdlib.h>
 #include<string.h>
 
-//struct osoba;
 typedef struct student* Position;
 
 typedef struct student{
     char firstName[20];
     char lastName[20];
+    char initial;
     int year;
     Position next;
 }_student;
@@ -24,22 +24,26 @@ int EnterAfter(Position);
 int EnterBefore(Position);
 char* nameOfFile(char*);
 int EnterIntoFile(Position, char*);
-int ScanFromFile(Position, char*);
+int ScanFromFile(Position, char*, int);
 int numberOfStudents(char*);
+Position getInitial(Position);
+int Sort(Position);
 
 
 int main()
 {
     char c = 0;
-    int m = 0;
+    int m = 0, n = 0;
 	char* fileName = NULL;
 	_student Head;
 	Head.next = 0;
-	//fileName = nameOfFile(fileName);
 
 	while(!m){
 
-    printf("\n1 - add a new student to the beginning of the list\n2 - print the list\n3 - add a new student to the end of the list\n4 - find a student of the list (by last name)\n5 - delete a student from the list\n6 - add a new student after a certain student\n7 - add a new student before a certain student\n8 - print the list into a .txt file\nc - close\n\n");
+    printf("\n1 - add a new student to the beginning of the list\n2 - print the list\n3 - add a new student to the end of the list\n");
+    printf("4 - find a student of the list (by last name)\n5 - delete a student from the list\n6 - add a new student after a certain student\n");
+    printf("7 - add a new student before a certain student\n8 - print the list into a .txt file\n9 - scan students from a .txt file\n");
+    printf("s - sort students by last name\nc - close\n\n");
     scanf(" %c", &c);
 
     switch (c) {
@@ -50,8 +54,12 @@ int main()
         case '5':   Delete(&Head);  break;
 		case '6':   EnterAfter(&Head);  break;
 		case '7':   EnterBefore(&Head);  break;
-		case '8':	fileName = nameOfFile(fileName); EnterIntoFile(Head.next, fileName); break;
-		case '9':	fileName = nameOfFile(fileName); ScanFromFile(Head.next, fileName); break;
+		case '8':	fileName = nameOfFile(fileName);
+					EnterIntoFile(Head.next, fileName); break;
+		case '9':	fileName = nameOfFile(fileName);
+					n = numberOfStudents(fileName);
+					ScanFromFile(&Head, fileName, n); break;
+		case 's':	Sort(&Head); break;
         case 'c':   return 0; m++;
 
         }
@@ -66,7 +74,7 @@ int EnterBeginning(Position p)
     while(1){
 
     q = (Position)malloc(sizeof(_student));
-    if(q = NULL){
+    if(NULL == q){
         printf("Allocation failed.\n");
         return 0;
     }
@@ -76,6 +84,7 @@ int EnterBeginning(Position p)
 
 	if(!strcmp(q->firstName,"stop")) break;
     scanf(" %s %d", &q->lastName, &q->year);
+    getInitial(q);
     if(!strcmp(q->firstName,"stop")) break;
 
     q->next = p->next;
@@ -104,7 +113,7 @@ int EnterEnd(Position p)
     while(1){
 
     q = (Position)malloc(sizeof(_student));
-    if(q = NULL){
+    if(NULL == q){
         printf("Allocation failed.\n");
         return 0;
     }
@@ -114,6 +123,7 @@ int EnterEnd(Position p)
 
 	if(!strcmp(q->firstName,"stop")) break;
     scanf(" %s %d", &q->lastName, &q->year);
+    getInitial(q);
 
     while(p->next != 0)
         p = p->next;
@@ -207,7 +217,7 @@ int EnterBefore(Position p)
 char* nameOfFile(char* fileName) {
 
 	fileName = (char*)malloc(1024 * sizeof(char));
-    if(fileName = NULL){
+    if(NULL == fileName){
         printf("Allocation failed.\n");
         return 0;
     }
@@ -226,36 +236,38 @@ int EnterIntoFile(Position p, char* fileName){
 		fprintf(f, "%s %s %d\n", p->firstName, p->lastName, p->year);
 		p = p->next;
 	}
+	
+	fclose(f);
 
     return 0;
 }
 
-int ScanFromFile(Position p, char* fileName){
+int ScanFromFile(Position p, char* fileName, int n){
 
 	Position q = 0;
-	int n = 0, i = 0;
+	int i = 0;
 
-	FILE* f = NULL;
+	FILE* f = NULL;	
 	f = fopen(fileName, "r");
 
-	n = numberOfStudents(fileName);
-
-	for (i = 0; i < n; i++) {
+	for (i = 0; i < n-1; i++) {
 
 		q = (Position)malloc(sizeof(_student));
-        if(q = NULL){
+        if(NULL == q){
             printf("Allocation failed.\n");
             return 0;
         }
 
-		fscanf(f, " %s %s %d", q->firstName, q->lastName, q->year); //prominit ovo
+		fscanf(f, " %s %s %d", q->firstName, q->lastName, &q->year);
+		getInitial(q);
 
-		while (p->next != 0)
+		while (NULL != p->next)
 			p = p->next;
 
 		q->next = p->next;
 		p->next = q;
 	}
+	
 	fclose(f);
 
     return 0;
@@ -276,4 +288,37 @@ int numberOfStudents(char* fileName) {
 	}
 	fclose(f);
 	return n;
+}
+
+Position getInitial(Position p) {
+	p->initial = p->lastName[0];
+	return p;
+}
+
+int Sort(Position p)
+{
+	Position q = NULL;
+	Position prev = NULL;
+	Position temp = NULL;
+	Position end = NULL;
+	
+	while (end != p->next) {
+		prev = p;
+		q = p->next;
+		
+		while (end != q->next) {
+			if (q->initial > q->next->initial) {
+				temp = q->next;
+				prev->next = temp;
+				q->next = temp->next;
+				temp->next = q;
+				q = temp;
+			}
+			prev = q;
+			q = q->next;
+		}
+		end = q;
+	}
+	
+	return 0;
 }
