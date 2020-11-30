@@ -14,54 +14,71 @@ typedef struct element{
 	Position next;
 }_el;
 
-int Enter(Position);
+int Entry(Position);
+int Enter(Position, int);
 int Print(Position);
-int Sort(Position);
+Position Previous(Position, Position);
+int Delete(Position, Position);
+int Union(Position, Position, Position);
+int Section(Position, Position, Position);
 
 int main(){
 	
 	_el head1;
 	_el head2;
+	_el head3;
+	_el head4;
 	head1.next = NULL;
 	head2.next = NULL;
+	head3.next = NULL;
+	head4.next = NULL;
 
 
-	printf("entering 1st list\n");
-	Enter(&head1);
-	//printf("entering 2nd list\n");
-	//Enter(&head2);
+	printf("Entering 1st list\n");
+	Entry(&head1);
+	printf("Entering 2nd list\n");
+	Entry(&head2);
 
-	printf("\n\n1st list:");
-	Print(head1.next);
-	//printf("\n\n2nd list:\n");
-	//Print(head2.next);
-
-	Sort(head1.next);
-	Print(head1.next);
-
+	Section(&head1, &head2, &head3);
+	Union(&head1, &head2, &head4);
+	
+	printf("\nSection:\n");
+	Print(head3.next);
+	printf("\nUnion:\n");
+	Print(head4.next);
 
 	return 0;
 }
 
-int Enter(Position p){
+int Entry(Position Head) {
 
+	int numOfElements = 0, n = 0, i = 0;
+	
+	printf("How many elements does the list have?\n");
+	scanf("%d", &numOfElements);
+	
+	for(i = 0; i < numOfElements; i++) {
+		printf("Member no.%d: ", i + 1);
+		scanf("%d", &n);
+		Enter(Head, n);
+	}
+	return 0;
+}
+
+int Enter(Position Head, int n){
+
+    Position p = Head;
     Position q = NULL;
-    printf("\nwhen done, type '0'.\n");
-
-    while(1){
 
     q = (Position)malloc(sizeof(_el));
 
-	scanf("%d", &q->n);
-
-	if(0 == q->n) break;
-
-    while(p->next != 0)
-        p = p->next;
-
-    q->next = p->next;
-    p->next = q;
-    }
+	while (NULL != p->next) p = p->next;
+		
+	q->n = n;
+	
+	q->next = p->next;
+	p->next = q;
+	
 	return 0;
 }
 
@@ -75,24 +92,78 @@ int Print(Position p){
 	return 0;
 }
 
-int Sort(Position p){ //prelos, napravit sortirani unos
-
-	Position q = NULL;
-	int x;
-	q = p->next;
-
-	while(1){ puts("a");
-		if(p->n > q->n){
-			x = p->n;
-			p->n = q->n;
-			q->n = x;
-			//q->next = p->next;
-			//p->next = q;
-		}
-		if(NULL == p->next) break;
-		p = p->next;
+Position Previous(Position p, Position q){
+	
+	Position r = p->next;
+	Position s = q;
+	
+	while(NULL != r && r->n != q->n){
+		s = r;
+		r = r->next;
 	}
+	if (NULL == r) return 0;
+	return s;
+}
+
+int Delete(Position p, Position q){
+	Position temp = NULL;
+	Position r = q;
+	
+	r = Previous(p, q);
+	temp = r->next;
+	
+	if (NULL != q->next) r->next = NULL;
+	else r->next = r->next->next;
+	
+	free(temp);
 	return 0;
 }
 
-//obrisa sortirani unos, triba ispocetka
+int Union(Position list1, Position list2, Position list3) { //zeza kad se upise puno brojeva
+
+	Position L1 = list1;
+	Position L2 = list2;
+	Position L3 = list3;
+	
+	while (NULL != L1->next && NULL != L2->next) {
+		if (L1->next->n == L2->next->n) {
+			Delete(list2, L2->next);
+			if (L2->next == NULL) break;
+			L2 = L2->next;
+		}
+		else {
+			L2 = L2->next;
+		}
+		if (NULL == L2->next) {
+			L1 = L1->next;
+			L2 = list2;
+		}
+	}
+	
+	L3->next = list1->next;
+	while (NULL != L3->next) L3 = L3->next;
+	L3->next = list2->next;
+	
+	return 0;
+}
+
+int Section(Position list1, Position list2, Position list4) {
+	
+	Position L1 = list1;
+	Position L2 = list2;
+	
+	while (NULL != L1->next && NULL != L2->next) {
+		if (L1->next->n == L2->next->n) {
+			Enter(list4, L2->next->n);
+			L2 = L2->next;
+		}
+		else {
+			L2 = L2->next;
+		}
+		if (L2->next == NULL) {
+			L1 = L1->next;
+			L2 = list2;
+		}
+	}
+	return 0;
+}
