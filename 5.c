@@ -71,6 +71,10 @@ int Enter(Position Head, int n){
     Position q = NULL;
 
     q = (Position)malloc(sizeof(_el));
+	if(NULL == q){
+        printf("Allocation failed.\n");
+        return 0;
+    	}
 
 	while (NULL != p->next) p = p->next;
 		
