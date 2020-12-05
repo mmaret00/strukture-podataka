@@ -22,21 +22,20 @@ int PopQueue(Position);
 
 int main(){
 	_el head;
-	char i = NULL;
+	char i = 0;
 	int end = 0;
 	head.next = NULL;
 	srand(time(NULL));
 
 	while(!end){
 
-	printf("1 - Push, 2 - Pop Stack, 3 - PopQueue, 4 - Print, 5 - Exit\n");
+	printf("1 - Push, 2 - Pop Stack, 3 - Pop Queue, 4 - Exit\n");
 	scanf(" %c", &i);
 		switch(i){
-			case '1': Push(&head); break;
-			case '2': PopStack(&head); break;
-			case '3': PopQueue(&head); break;
-			case '4': Print(head.next); break;
-			case '5': return 0; end++;
+			case '1': Push(&head); Print(head.next); break;
+			case '2': PopStack(&head); Print(head.next); break;
+			case '3': PopQueue(&head); Print(head.next); break;
+			case '4': return 0;
 		}
 	}
 
@@ -73,7 +72,7 @@ int Print(Position p){
 
 	return 0;
 }
-int PopStack(Position p){
+int PopQueue(Position p){
 
 	Position q = NULL;
 	int temp;
@@ -85,11 +84,11 @@ int PopStack(Position p){
 	temp = p->n;
 	q->next = NULL;
 
-	free(p);//VIDIT
+	free(p);
 
 	return temp;
 }
-int PopQueue(Position p){
+int PopStack(Position p){
 
 	Position q = NULL;
 	int temp;
@@ -99,7 +98,7 @@ int PopQueue(Position p){
 
 	temp = q->n;
 
-	free(q);//VIDIT
+	free(q);
 
 	return temp;
 }
