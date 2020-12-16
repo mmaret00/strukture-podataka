@@ -51,9 +51,13 @@ int Push(Position p, int x){
 
 	Position q = NULL;
 
-    while (p->next != NULL) p = p->next;
+    	while (p->next != NULL) p = p->next;
     
 	q = (Position)malloc(sizeof(_el));
+	if(NULL == q){
+        	printf("Allocation failed.\n");
+        	return 0;
+   		}
 	q->n = x;
 	q->next = p->next;
 	p->next = q;
