@@ -36,7 +36,7 @@ int main(){
 char* nameOfFile(char* fileName) {
 
 	fileName = (char*)malloc(1024 * sizeof(char));
-    if(NULL == fileName){
+    	if(NULL == fileName){
         printf("Allocation failed.\n");
         return 0;
     }
