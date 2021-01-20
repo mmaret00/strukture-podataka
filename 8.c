@@ -1,180 +1,194 @@
-/*Napisati program koji pomoću vezanih listi (stabala) predstavlja strukturu direktorija. Omogućiti unos novih direktorija i pod-direktorija, ispis sadržaja direktorija i povratak u prethodni direktorij.
-Točnije program treba preko menija simulirati korištenje DOS naredbi: 1- "md", 2 - "cd dir", 3 - "cd..", 4 - "dir" i 5 – izlaz.*/
-
-//koristit strcmpi (case insensitive)
-
 #define _CRT_SECURE_NO_WARNINGS
 #define MAX_LENGTH 1024
-#define MAX_DIR_LENGTH 256
+
 #include<stdio.h>
 #include<stdlib.h>
-#include<ctype.h>
 #include<string.h>
-
-typedef enum _insertResult{
-	SUCCESS,
-	DUPLICATED_DIRECTORY,
-	ALLOCATION_FAILED
-}InsertResult;
+#include<ctype.h>
 
 
-typedef struct _dir* PosDir;
+typedef struct list* pos;
+typedef struct stack* posstack;
 
-typedef struct _dir{
-	char name[MAX_DIR_LENGTH];
-	PosDir child;
-	PosDir sibling;
-}Dir;
+typedef struct list {
 
+	char name[20];
+	int root;
+	pos next;
+	pos child;
+}_list;
 
-typedef struct _stack* PosStack;
+typedef struct stack {
+	pos adress;
+	posstack next;
+}_stack;
 
-typedef struct _stack {
-	PosDir dir;
-	PosStack next;
-}Stack;
+int enter(pos);
+pos shift(pos, posstack);
+int printDirectories(posstack);
+pos pop(posstack);
+int push(posstack, pos);
+pos goBack(posstack);
+int subdirectories(pos);
 
-InsertResult md(PosDir, char*);
-PosDir createDir(char*);
-PosDir insertRec(PosDir current, PosDir el);
-int deleteDir(PosDir);
-int pushDir(PosStack, PosDir);
-PosDir popDir(PosStack);
-PosDir findDir(PosDir, char*);
+int main() {
 
+	_list tree;
+	pos current = &tree;
+	_stack head;
+	char choice[20];
+	tree.child = NULL;
+	tree.next = NULL;
+	tree.root = 1;
+	printf("Enter root name: ");
+	scanf(" %s", tree.name);
+	head.next = NULL;
+	push(&head, &tree);
 
+	while (1) {
 
-int main(){
-	PosDir root = NULL;
-	PosDir current = NULL;
-	Stack stack;
-	stack.next = NULL;
+		printf("\n\nmd-make directory\t   cd-change directory\t  dir-print directories\t  cd..-go back\t\texit-exit the program\n\n");
+		printDirectories(head.next);
+		scanf(" %s", choice);
 
-	root = createDir("C:");
+		if(!strcmp(choice, "md"))
+			enter(current);
 
-	if(NULL == root) return 0;
+		else if(!strcmp(choice, "cd")){
+			current = shift(current, &head);
+			printDirectories(head.next);
+		}
 
-	//while i switch case
+		else if(!strcmp(choice, "dir"))
+			subdirectories(current);
 
-	while(stack.next != NULL)
-		popDir(&stack);
+		else if(!strcmp(choice, "cd..")){
+			current = goBack(&head);
+			printDirectories(head.next);
+		}
 
-	deleteDir(root);
+		else if(!strcmp(choice, "exit"))
+			return 0;
 
-	return 0;
-}
-
-PosDir createDir(char* name){
-
-	PosDir dir = NULL;
-
-	dir = malloc(sizeof(Dir));
-
-	if(NULL == dir){
-		printf("Allocation failed\n");
-		return 0;
-	}
-
-	strcpy(dir->name, name);
-	dir->child = NULL;
-	dir->sibling = NULL;
-
-	return 0;
-}
-
-int deleteDir(PosDir current){
-	if(NULL == current) return;
-	deleteDir(current->sibling);
-	deleteDir(current->child);
-	free(current);
-}
-
-int pushDir(PosStack head, PosDir dir){
-
-	PosStack el = NULL;
-
-	el =(PosStack)malloc(sizeof(Stack));
-
-	if(NULL == el){
-		printf("Allocation failed\n");
-		return 0;
-	}
-
-	el->dir = dir;
-	el->next = head->next;
-	head->next = el;
+        else printf("Wrong entry.\n");
+		}
 
 	return 0;
 }
 
-PosDir popDir(PosStack head){
+pos goBack(posstack s) {
 
-	PosStack first = head->next;
-	PosDir result = NULL;
+	pos p = pop(s);
+	return p;
+}
 
-	if(NULL == first){
+int subdirectories(pos p) {
+
+	printf("Subdirectories:\n");
+	p = p->child;
+	if(NULL == p){
+		printf("Directory is empty.\n");
 		return 0;
 	}
+	printf("%s\n", p->name);
+	p = p->next;
 
-	head->next = first->next;
-	result = first->dir;
-	free(first);
-
-	return result;
+	while (p != NULL) {
+		printf("%s\n", p->name);
+		p = p->next;
+	}
+	return 0;
 }
 
-PosDir findDir(PosDir current, char* name){
+int enter(pos p) {
+	pos q = NULL;
+	char* name = NULL;
+	scanf(" %s", name);
+	q = (pos)malloc(sizeof(_list));
+	if(NULL == q){
+		printf("Allocation error\n");
+		return 0;
+	}
+	strcpy(q->name, name);
+	if (NULL == p->child) {
+		p->child = q;
+		q->next = NULL;
+		q->root = 0;
+		q->child = NULL;
+	}
+	else {
+		p = p->child;
 
-	PosDir child = current->child;
+		while (p->next != NULL)  p = p->next;
+		q->next = p->next;
+		p->next = q;
+		q->child = NULL;
+		q->root = 1;
+	}
 
-	while(child != NULL && strcmp(child->name, name) != 0)
-		child = child->sibling;
-
-	return child;
+	return 0;
 }
 
-InsertResult md(PosDir current, char* name){
+pos shift(pos p, posstack q) {
+	pos tree = p;
+	char nameOfDir[20];
 
-	PosDir el = NULL;
-	PosDir child = NULL;
+	scanf(" %s", nameOfDir);
 
-	if(findDir(current, name) != NULL) return DUPLICATED_DIRECTORY;
 
-	el = createDir(name);
-
-	if(NULL == el) return ALLOCATION_FAILED;
-
-	if(NULL == current->child){
-		current->child = el;
-		return SUCCESS;
+	p = tree;
+	p = p->child;
+	while (p != NULL) {
+		if (!strcmp(nameOfDir, p->name)) {
+			push(q, p);
+			return p;
+		}
+		else p = p->next;
 	}
 
-	if(strcmp(current->child->name, el->name) > 0){
-		el->sibling = current->child;
-		current->child = el;
-		return SUCCESS;
-	}
-
-	child = current->child;
-
-	while(child->sibling != NULL && strcmp(child->sibling->name, el->name) < 0)
-		child = child->sibling;
-
-	el->sibling = child->sibling;
-	child->sibling = el;
-
-	return SUCCESS;
 }
 
-PosDir insertRec(PosDir current, PosDir el){
+int push(posstack p, pos x) {
 
-	if(NULL == current) return el;
-
-	if(strcmp(el->name, current->name) < 0){
-		el->sibling = current;
-		return el;
+	posstack q = NULL;
+	while (p->next != NULL) p = p->next;
+	q = (posstack)malloc(sizeof(_stack));
+	if(NULL == q){
+		printf("Allocation error\n");
+		return 0;
 	}
+	q->adress = x;
+	q->next = p->next;
+	p->next = q;
+	return 0;
+}
 
-	current->sibling = insertRec(current->sibling, el);
-	return current;
+pos pop(posstack p) {
+
+	posstack temp = p;
+	posstack q = NULL;
+	while (p->next->next != NULL)p = p->next;
+	if(p->next->adress->root != 1){
+		q = p->next;
+		temp = p;
+		p->next = NULL;
+		free(q);
+		return temp->adress;
+	}
+	else {
+		printf("You cannot pop the root.\n");
+		return p->next->adress;
+	}
+	return NULL;
+}
+
+int printDirectories(posstack p){
+
+	while (p != NULL) {
+		if(p->adress->root) printf("%s", p->adress->name);
+		else printf(" :\\ %s", p->adress->name);
+		p = p->next;
+	}
+	printf(">");
+	return 0;
 }
