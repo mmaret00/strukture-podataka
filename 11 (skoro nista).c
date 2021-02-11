@@ -1,105 +1,220 @@
 #define _CRT_SECURE_NO_WARNINGS
-#define MAX_LENGTH 1024
 
 #include<stdio.h>
 #include<stdlib.h>
 #include<string.h>
-#include<ctype.h>
-/*
-//sortirani unos
-//q se oni sta se unosi
-while(p->next != NULL && strcmp(p->next->prezime, q->prezime) < 0)
-		p = p->next;
-strcmp(q->ime, p->next->ime) > 0)
-	p = p->next;
 
-q->next = p->next;
-p->next = q; */
+typedef struct List* poz;
+typedef struct List* lista;
+typedef struct HashTab* hashTabPoz;
 
-typedef struct list* pos;
+typedef struct List {
 
-typedef struct list{
-	int mb;
-	char* firstName;
-	char* lastName;
+	char firstName[10];
+	char lastName[20];
+	int id;
 	int key;
-	pos next;
+	poz next;
 }_list;
 
-int enter(pos, pos[], FILE*);
-pos enterSorted(pos, pos);
-int print(pos);
+typedef struct HashTab {
 
-int main(){
+	int tabSize;
+	lista* hashList;
+}hashT;
 
-	_list head;
-	pos k[11];
+hashTabPoz init(int);
+int add(hashTabPoz);
+int enter(poz);
+int key(poz);
+int print(hashTabPoz);
+int sorter(char*, char*);
+int find(hashTabPoz);
+
+int main() {
+
+	int x = 0;
+	hashTabPoz hashTable = NULL;
+	hashTable = init(11);
+	do {
+		printf("\nEnter - 1, print - 2, find - 3, end - 4\n");
+		scanf("%d", &x);
+		switch (x) {
+		case 1:	add(hashTable);
+			break;
+
+		case 2:	print(hashTable);
+			break;
+
+		case 3:	find(hashTable);
+			break;
+
+		case 4:	return 0;
+		}
+		
+	} while (x != 4);
+	return 0;
+}
+
+int sorter(char* p1, char* p2) {
+
 	int i = 0;
-	FILE* f = fopen("studenti.txt", "r");
-
-	head.next = NULL;
-
-	for(i = 0 ; i < 11 ; i++)
-		k[i] = i;
-	
-	enter(&head, k, f);
-	printf(head.next);
-
-	return 0;
-}
-int enter(pos p, pos k[], FILE* f){
-
-	int key = 0, i = 0, maticni = 0;
-	char* first = (char*)malloc(sizeof(char) * 1024);
-	char* last = (char*)malloc(sizeof(char) * 1024);
-	pos q = NULL;
-	pos head = p;
-
-	/*
-	for(i = 0 ; i < 5 ; i++){
-		key += p->lastName[i];
-		p = p->next;
-	}
-	key = key % 11;
-	printf("\nkljuc: %d\n", key);
-	*/
-	
-	while(!feof(f)){
-		fscanf(f, " %d %s %s ", &maticni, first, last);
-
-		q = (pos)malloc(sizeof(_list));
-		q->firstName = (char*)malloc(sizeof(char) * 1024);
-		q->lastName = (char*)malloc(sizeof(char) * 1024);
-		
-		strcpy(q->firstName, first);
-		strcpy(q->lastName, last);
-		q->mb = maticni;
-		
-		p = enterSorted(head, q);
-	}
-
-	return 0;
-}
-pos enterSorted(pos p, pos q){
-
-	pos head = p;
-
-	while(p->next != NULL && strcmp(p->next->lastName, q->lastName) < 0)
-		p = p->next;
-
-	/*while(strcmp(q->firstName, p->next->firstName) > 0)
-		p = p->next; */
-	
-	q->next = p->next;
-	p->next = q; 
-		
-	return p;
-}
-int print(pos p){
-
-	while(p != NULL){
-		printf("\n%d %s %s", p->mb, p->firstName, p->lastName);
-		p = p->next;
+	while (p1[i] != '\0' && p2[i] != '\0') {
+		if (p1[i] > p2[i])return 1;
+		else if (p1[i] == p2[i])i++;
+		else return -1;
 	}
 	return 0;
+}
+
+int find(hashTabPoz hash) {
+
+	lista pathFinder = NULL;
+	
+	poz p = (poz)malloc(sizeof(_list));
+	if (p == NULL) return 0;
+	
+	printf("\nEnter first and last name:\n");
+	scanf("%s %s", p->firstName, p->lastName);
+	
+	p->key = key(p);
+	pathFinder = hash->hashList[p->key];
+	
+	while (pathFinder != NULL) {
+		if (!sorter(pathFinder->firstName, p->firstName) && !sorter(pathFinder->lastName, p->lastName)) break;
+		pathFinder = pathFinder->next;
+	}
+	
+	if (pathFinder == NULL) return 0;
+
+	printf("ID: %d", pathFinder->id);
+
+	return 0;
+
+}
+
+
+int print(hashTabPoz hash) {
+
+	lista printer = NULL;
+	int i = 0, br = 0, mb = 0;
+	char c = 0;
+	
+	printf("Do you want to see the ID? (y/n)\n");
+	scanf(" %c", &c);
+	
+	if (c == 'y') mb++;
+	else if (c == 'n') mb = 0;
+	else { 
+		printf("Wrong entry\n");
+		return 0; 
+	}
+
+	for (i = 0; i < 11; i++) {
+		br = 0;
+		printer = hash->hashList[i];
+		while (printer != NULL) {
+			if (!br) {
+				printf("\nIndex %d: %s %s", i, printer->firstName, printer->lastName);
+				if (mb) printf(" %d", printer->id);
+				br++;
+			}
+			
+			else {
+				printf(" , %s %s", printer->firstName, printer->lastName);
+				if (mb) printf(" %d", printer->id);
+			}
+			
+			printer = printer->next;
+		}
+	}
+	
+	return 0;
+}
+
+int key(poz q){
+	
+	int i = 0, sum = 0;
+	
+	for (i = 0; i < 5; i++) {
+		if (*(q->lastName + i) == '\0') break;
+		
+		sum += *(q->lastName + i);
+	}
+	
+	q->key = sum % 11;
+
+	return q->key;
+}
+
+int add(hashTabPoz hash) {
+
+	lista target = NULL;
+	poz p = NULL, temp = NULL;
+	int Key = 0;
+	printf("Type stop to stop.\n");
+
+	while (1) {
+		
+		target = NULL;
+		p = (poz)malloc(sizeof(_list));
+		p->next = NULL;
+		printf("First name, last name, ID:\n");
+		scanf(" %s", p->firstName);
+		if (!strcmp(p->firstName, "stop")) break;
+
+		scanf(" %s %d", p->lastName, &p->id);
+
+		Key = key(p);
+
+		target = hash->hashList[Key];
+
+		if (target == NULL) {
+
+			hash->hashList[Key] = p;
+		}
+
+		else if ((strcmp(p->lastName, target->lastName) < 0) || ((strcmp(p->lastName, target->lastName) == 0) && (strcmp(p->firstName, target->firstName) < 0))) {
+				p->next = target;
+				hash->hashList[Key] = p;
+		}
+
+		else{
+				while (target->next != NULL && (strcmp(p->lastName, target->next->lastName) > 0))
+					target = target->next;
+
+				if (strcmp(p->lastName, target->next->lastName) == 0)
+					while (target->next != NULL && strcmp(p->lastName, target->next->lastName) == 0 && strcmp(p->firstName, target->firstName) < 0)
+						target = target->next;
+
+				temp = target->next;
+				target->next = p;
+				p->next = temp;
+		}
+	}
+	return 0;
+}
+
+hashTabPoz init(int size) {
+
+	int i = 0;
+	hashTabPoz h = NULL;
+	h = (hashTabPoz)malloc(sizeof(hashT));
+	if (h == NULL) {
+		printf("Allocation error\n");
+		return 0;
+	}
+	h->tabSize = size;
+	h->hashList = (lista*)malloc(h->tabSize * sizeof(lista));
+	if (h->hashList == NULL) {
+		printf("Error\n");
+		return 0;
+	}
+
+	for (i = 0; i < h->tabSize; i++) {
+
+		h->hashList[i] = NULL;
+	}
+
+	return h;
 }
