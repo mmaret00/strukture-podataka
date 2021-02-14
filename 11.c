@@ -1,220 +1,212 @@
-#define _CRT_SECURE_NO_WARNINGS
-
 #include<stdio.h>
 #include<stdlib.h>
 #include<string.h>
+#include<math.h>
+#include<ctype.h>
 
-typedef struct List* poz;
-typedef struct List* lista;
-typedef struct HashTab* hashTabPoz;
+typedef struct lista* poz;
+typedef struct lista {
 
-typedef struct List {
-
-	char firstName[10];
-	char lastName[20];
 	int id;
-	int key;
+	char* ime;
+	char* prezime;
+	int kljuc;
 	poz next;
-}_list;
+}_lista;
 
-typedef struct HashTab {
+typedef struct hash* pozh;
+typedef struct hash {
 
-	int tabSize;
-	lista* hashList;
-}hashT;
+	poz* list;
+}_hash;
 
-hashTabPoz init(int);
-int add(hashTabPoz);
-int enter(poz);
-int key(poz);
-int print(hashTabPoz);
-int sorter(char*, char*);
-int find(hashTabPoz);
+int inic(pozh);
+int unos(pozh, int, char*, char*);
+int ispis(pozh);
+int izracunaKljuc(char*);
+int cita(pozh, FILE*);
+int pronadi(pozh);
 
-int main() {
+int main(){
+	
+	_hash h;
+	FILE* f = fopen("jedanes", "r");
+	if(NULL == f){
+		printf("greska u fileu");
+		return -1;
+	}
+	
+	inic(&h);
+	cita(&h, f);
+	
+	ispis(&h);
 
-	int x = 0;
-	hashTabPoz hashTable = NULL;
-	hashTable = init(11);
-	do {
-		printf("\nEnter - 1, print - 2, find - 3, end - 4\n");
-		scanf("%d", &x);
-		switch (x) {
-		case 1:	add(hashTable);
-			break;
-
-		case 2:	print(hashTable);
-			break;
-
-		case 3:	find(hashTable);
-			break;
-
-		case 4:	return 0;
-		}
-		
-	} while (x != 4);
+	
+	pronadi(&h);
+	
+	fclose(f);
+	
 	return 0;
 }
 
-int sorter(char* p1, char* p2) {
-
+int inic(pozh h){
+	
 	int i = 0;
-	while (p1[i] != '\0' && p2[i] != '\0') {
-		if (p1[i] > p2[i])return 1;
-		else if (p1[i] == p2[i])i++;
-		else return -1;
-	}
-	return 0;
-}
-
-int find(hashTabPoz hash) {
-
-	lista pathFinder = NULL;
 	
-	poz p = (poz)malloc(sizeof(_list));
-	if (p == NULL) return 0;
-	
-	printf("\nEnter first and last name:\n");
-	scanf("%s %s", p->firstName, p->lastName);
-	
-	p->key = key(p);
-	pathFinder = hash->hashList[p->key];
-	
-	while (pathFinder != NULL) {
-		if (!sorter(pathFinder->firstName, p->firstName) && !sorter(pathFinder->lastName, p->lastName)) break;
-		pathFinder = pathFinder->next;
+	h->list = (poz*)malloc(sizeof(_lista) * 11);
+	if(NULL == h->list){
+		printf("greska u alokaciji");
+		return -1;
 	}
 	
-	if (pathFinder == NULL) return 0;
-
-	printf("ID: %d", pathFinder->id);
-
-	return 0;
-
-}
-
-
-int print(hashTabPoz hash) {
-
-	lista printer = NULL;
-	int i = 0, br = 0, mb = 0;
-	char c = 0;
-	
-	printf("Do you want to see the ID? (y/n)\n");
-	scanf(" %c", &c);
-	
-	if (c == 'y') mb++;
-	else if (c == 'n') mb = 0;
-	else { 
-		printf("Wrong entry\n");
-		return 0; 
-	}
-
-	for (i = 0; i < 11; i++) {
-		br = 0;
-		printer = hash->hashList[i];
-		while (printer != NULL) {
-			if (!br) {
-				printf("\nIndex %d: %s %s", i, printer->firstName, printer->lastName);
-				if (mb) printf(" %d", printer->id);
-				br++;
-			}
-			
-			else {
-				printf(" , %s %s", printer->firstName, printer->lastName);
-				if (mb) printf(" %d", printer->id);
-			}
-			
-			printer = printer->next;
-		}
-	}
-	
-	return 0;
-}
-
-int key(poz q){
-	
-	int i = 0, sum = 0;
-	
-	for (i = 0; i < 5; i++) {
-		if (*(q->lastName + i) == '\0') break;
+	for(i = 0; i < 11; i++){
 		
-		sum += *(q->lastName + i);
+		h->list[i] = NULL;
 	}
 	
-	q->key = sum % 11;
-
-	return q->key;
-}
-
-int add(hashTabPoz hash) {
-
-	lista target = NULL;
-	poz p = NULL, temp = NULL;
-	int Key = 0;
-	printf("Type stop to stop.\n");
-
-	while (1) {
-		
-		target = NULL;
-		p = (poz)malloc(sizeof(_list));
-		p->next = NULL;
-		printf("First name, last name, ID:\n");
-		scanf(" %s", p->firstName);
-		if (!strcmp(p->firstName, "stop")) break;
-
-		scanf(" %s %d", p->lastName, &p->id);
-
-		Key = key(p);
-
-		target = hash->hashList[Key];
-
-		if (target == NULL) {
-
-			hash->hashList[Key] = p;
-		}
-
-		else if ((strcmp(p->lastName, target->lastName) < 0) || ((strcmp(p->lastName, target->lastName) == 0) && (strcmp(p->firstName, target->firstName) < 0))) {
-				p->next = target;
-				hash->hashList[Key] = p;
-		}
-
-		else{
-				while (target->next != NULL && (strcmp(p->lastName, target->next->lastName) > 0))
-					target = target->next;
-
-				if (strcmp(p->lastName, target->next->lastName) == 0)
-					while (target->next != NULL && strcmp(p->lastName, target->next->lastName) == 0 && strcmp(p->firstName, target->firstName) < 0)
-						target = target->next;
-
-				temp = target->next;
-				target->next = p;
-				p->next = temp;
-		}
-	}
 	return 0;
 }
 
-hashTabPoz init(int size) {
+int cita(pozh h, FILE* f){
+	
+	char* ime = NULL;
+	char* prezime = NULL;
+	int id = 0;
+	
+	while(!feof(f)){
+		
+		ime = (char*)malloc(sizeof(char) * 1024);
+		if(NULL == ime){
+		printf("greska u alokaciji");
+		return -1;
+		}
+		prezime = (char*)malloc(sizeof(char) * 1024);
+		if(NULL == prezime){
+		printf("greska u alokaciji");
+		return -1;
+		}
+		
+		fscanf(f, "%d %s %s ", &id, ime ,prezime);
+		
+		unos(h, id, ime, prezime);
+	}
+	
+	return 0;
+}
 
+int izracunaKljuc(char* prezime){
+	
+	int kljuc = 0, i = 0;
+	
+	for(i = 0; i < 5; i++){
+		if (!(prezime[i])) break;
+		kljuc += prezime[i];
+	}
+	
+	return kljuc%11;
+}
+
+int unos(pozh h, int id, char* ime, char* prezime){
+	
+	poz q = NULL;
+	poz p = NULL;
+	int kljuc = izracunaKljuc(prezime);
+	
+	if(NULL == h->list[kljuc]){
+		h->list[kljuc] = (poz)malloc(sizeof(_lista));
+		if(NULL == h->list[kljuc]){
+		printf("greska u alokaciji");
+		return -1;
+		}
+		h->list[kljuc]->next = NULL;
+	}
+	
+	q = (poz)malloc(sizeof(_lista));
+	if(NULL == q){
+		printf("greska u alokaciji");
+		return -1;
+		}
+	
+	q->ime = (char*)malloc(sizeof(char) * 1024);
+	if(NULL == q->ime){
+		printf("greska u alokaciji");
+		return -1;
+		}
+	q->prezime = (char*)malloc(sizeof(char) * 1024);
+	if(NULL == q->prezime){
+		printf("greska u alokaciji");
+		return -1;
+		}
+	
+	q->id = id;
+	strcpy(q->ime, ime);
+	strcpy(q->prezime, prezime);
+	q->kljuc = kljuc;
+	
+	p = h->list[kljuc];
+	
+	while(p->next != NULL && ((strcmp(q->prezime, p->next->prezime) > 0) || ((strcmp(q->prezime, p->next->prezime) == 0) && strcmp(q->ime, p->next->ime) > 0))){
+		
+		p = p->next;
+	}
+	
+	q->next = p->next;
+	p->next = q;
+	
+	return 0;
+}
+
+int ispis(pozh h){
+	
+	poz head = NULL;
 	int i = 0;
-	hashTabPoz h = NULL;
-	h = (hashTabPoz)malloc(sizeof(hashT));
-	if (h == NULL) {
-		printf("Allocation error\n");
-		return 0;
-	}
-	h->tabSize = size;
-	h->hashList = (lista*)malloc(h->tabSize * sizeof(lista));
-	if (h->hashList == NULL) {
-		printf("Error\n");
-		return 0;
-	}
+	
+	for(i = 1; i < 11; i++){
+		
+		if(h->list[i] != NULL){
 
-	for (i = 0; i < h->tabSize; i++) {
+			head = h->list[i];
 
-		h->hashList[i] = NULL;
+			h->list[i] = h->list[i]->next;
+			printf("\nkljuc %i: ", i);
+						
+			while(h->list[i] != NULL){
+				
+				printf("%s %s %d, ", h->list[i]->prezime, h->list[i]->ime, h->list[i]->id);
+				h->list[i] = h->list[i]->next;
+			}
+			h->list[i] = head;
+		}
 	}
+	
+	return 0;
+}
 
-	return h;
+int pronadi(pozh h){
+	
+	char* ime = (char*)malloc(sizeof(char) * 1024);
+	char* prezime = (char*)malloc(sizeof(char) * 1024);
+	poz p = NULL;
+	int kljuc = 0;
+	printf("\nunesi ime i prezime studenta kojeg zelis pronaci:\n");
+	scanf("%s %s", ime, prezime);
+	
+	kljuc = izracunaKljuc(prezime);
+	p = h->list[kljuc];
+	
+	p = p->next;
+	
+	while(p->next != NULL){
+		if(strcmp(p->prezime, prezime) == 0) break;
+		p = p->next;
+		
+		if (NULL == p->next){
+			printf("\nnema tog studenta");
+			return 0;
+			}
+		}
+	
+	printf("\nmaticni broj tog studenta je %d\n", p->id);
+	
+	return 0;
 }
